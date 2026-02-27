@@ -3,7 +3,6 @@
 #include <string>
 
 #include "mqtt/async_client.h"
-#include "mavlink/common/mavlink.h"
 #include "mqtt_client.hpp"
 #include "mavlink_manager.hpp"
 
