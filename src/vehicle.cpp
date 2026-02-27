@@ -40,21 +40,15 @@ void Vehicle::handle_heartbeat(const mavlink_message_t *message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(message, &heartbeat);
 
-    printf("Got heartbeat from ");
     switch (heartbeat.autopilot)
     {
     case MAV_AUTOPILOT_GENERIC:
-        printf("generic");
         break;
     case MAV_AUTOPILOT_ARDUPILOTMEGA:
-        printf("ArduPilot");
         break;
     case MAV_AUTOPILOT_PX4:
-        printf("PX4");
         break;
     default:
-        printf("other");
         break;
     }
-    printf(" autopilot\n");
 }
