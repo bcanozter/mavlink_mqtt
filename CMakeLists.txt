@@ -4,10 +4,11 @@ cmake_minimum_required( VERSION 3.16 )
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-set(MAVLINK_INCLUDE_DIR
+set(INCLUDE_DIR
     ${CMAKE_SOURCE_DIR}/include
 )
 
+find_package(MAVLink REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -16,8 +17,8 @@ add_executable(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
-    ${MAVLINK_INCLUDE_DIR} 
+    ${INCLUDE_DIR} 
     src
 )
 
-target_link_libraries( ${PROJECT_NAME}  paho-mqttpp3 paho-mqtt3as)
+target_link_libraries( ${PROJECT_NAME}  MAVLink::mavlink paho-mqttpp3 paho-mqtt3as)

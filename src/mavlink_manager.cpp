@@ -1,4 +1,3 @@
-#include <bits/stdc++.h>
 #include <unistd.h>
 #include <string>
 #include <sys/socket.h>
@@ -185,10 +184,6 @@ void MavlinkManager::send_heartbeat(int socket_fd, const struct sockaddr_in *src
     if (ret != len)
     {
         printf("sendto error: %s\n", strerror(errno));
-    }
-    else
-    {
-        printf("Sent heartbeat\n");
     }
 }
 

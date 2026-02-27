@@ -2,7 +2,8 @@
 
 #include <string>
 #include <sys/socket.h>
-#include <mavlink/v2.0/common/mavlink.h>
+#include <mavlink/common/mavlink.h>
+
 class MavlinkManager
 {
 private:
