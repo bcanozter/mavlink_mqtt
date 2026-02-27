@@ -36,10 +36,10 @@ COPY . .
 RUN cmake -B build -H. -DCMAKE_PREFIX_PATH="../mavlink/install"
 RUN cmake --build build
 
-FROM ubuntu:22.04 as final
+FROM ubuntu:22.04 AS final
 
 COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /home/workspace/mavlink_mqtt/build/mavlink_mqtt /usr/local/bin/
 RUN ldconfig
 
-ENTRYPOINT ["mavlink_mqtt"]
+CMD ["mavlink_mqtt"]
