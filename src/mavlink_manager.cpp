@@ -1,10 +1,17 @@
-#include "mavlink_manager.hpp"
 #include <bits/stdc++.h>
 #include <unistd.h>
 #include <string>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+
+#include "mavlink_manager.hpp"
+#include "mqtt_client.hpp"
+
+//https://github.com/nlohmann/json
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 #define MAX_RECV 2048
 
@@ -97,9 +104,25 @@ void MavlinkManager::receive_some(int socket_fd, struct sockaddr_in *src_addr, s
             case MAVLINK_MSG_ID_HEARTBEAT:
                 handle_heartbeat(&message);
                 break;
+            case MAVLINK_MSG_ID_SYS_STATUS:
+                handle_sys_status(&message);
+                break;
             }
         }
     }
+}
+
+void MavlinkManager::handle_sys_status(const mavlink_message_t *message)
+{
+    mavlink_sys_status_t sys_status;
+    mavlink_msg_sys_status_decode(message, &sys_status);
+    std::string topic = "vehicle/" + std::to_string(message->sysid) + "/sys_status";
+    json j = json{
+        {"voltage_battery", (uint16_t)sys_status.voltage_battery},
+        {"current_battery", (int16_t)sys_status.current_battery},
+        {"battery_remaining", (int8_t)sys_status.battery_remaining}};
+    std::string payload = j.dump();
+    mqtt_client.publish(topic, payload, QOS);
 }
 
 void MavlinkManager::handle_heartbeat(const mavlink_message_t *message)

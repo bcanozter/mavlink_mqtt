@@ -18,3 +18,6 @@ public:
     void publish(const std::string topic,
                  const std::string payload, const int QOS);
 };
+
+const int QOS = 1;
+extern MqttClient mqtt_client;

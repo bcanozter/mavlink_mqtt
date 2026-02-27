@@ -1,6 +1,9 @@
 #include "mqtt_client.hpp"
 #include "mqtt/client.h"
 
+const std::string DFLT_SERVER_URI{"mqtt://localhost:1883"};
+MqttClient mqtt_client(DFLT_SERVER_URI, "mavlink_mqtt_client", mqtt::NO_PERSISTENCE);
+
 int MqttClient::connect()
 {
     try
