@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/mqtt_client.cpp
     src/mavlink_manager.cpp
+    src/vehicle.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE 

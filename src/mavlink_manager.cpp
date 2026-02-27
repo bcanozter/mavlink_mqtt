@@ -3,14 +3,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <iostream>
 
 #include "mavlink_manager.hpp"
-#include "mqtt_client.hpp"
-
-//https://github.com/nlohmann/json
-#include "json.hpp"
-
-using json = nlohmann::json;
 
 #define MAX_RECV 2048
 
@@ -38,6 +33,7 @@ int MavlinkManager::_init_socket(std::string address, int port)
     }
     return 0;
 }
+
 int MavlinkManager::initUDP(std::string address, int port)
 {
     int err;
@@ -97,55 +93,9 @@ void MavlinkManager::receive_some(int socket_fd, struct sockaddr_in *src_addr, s
             // printf(
             //     "Received message %d from %d/%d\n",
             //     message.msgid, message.sysid, message.compid);
-
-            switch (message.msgid)
-            {
-            case MAVLINK_MSG_ID_HEARTBEAT:
-                handle_heartbeat(&message);
-                break;
-            case MAVLINK_MSG_ID_SYS_STATUS:
-                handle_sys_status(&message);
-                break;
-            }
+            handle_mavlink_message(&message);
         }
     }
-}
-
-void MavlinkManager::handle_sys_status(const mavlink_message_t *message)
-{
-    mavlink_sys_status_t sys_status;
-    mavlink_msg_sys_status_decode(message, &sys_status);
-    std::string topic = "vehicle/" + std::to_string(message->sysid) + "/sys_status";
-    json j = json{
-        {"voltage_battery", (uint16_t)sys_status.voltage_battery},
-        {"current_battery", (int16_t)sys_status.current_battery},
-        {"battery_remaining", (int8_t)sys_status.battery_remaining}};
-    std::string payload = j.dump();
-    mqtt_client.publish(topic, payload, QOS);
-}
-
-void MavlinkManager::handle_heartbeat(const mavlink_message_t *message)
-{
-    mavlink_heartbeat_t heartbeat;
-    mavlink_msg_heartbeat_decode(message, &heartbeat);
-
-    printf("Got heartbeat from ");
-    switch (heartbeat.autopilot)
-    {
-    case MAV_AUTOPILOT_GENERIC:
-        printf("generic");
-        break;
-    case MAV_AUTOPILOT_ARDUPILOTMEGA:
-        printf("ArduPilot");
-        break;
-    case MAV_AUTOPILOT_PX4:
-        printf("PX4");
-        break;
-    default:
-        printf("other");
-        break;
-    }
-    printf(" autopilot\n");
 }
 
 void MavlinkManager::send_some(int socket_fd, const struct sockaddr_in *src_addr, socklen_t src_addr_len)
@@ -185,6 +135,20 @@ void MavlinkManager::send_heartbeat(int socket_fd, const struct sockaddr_in *src
     {
         printf("sendto error: %s\n", strerror(errno));
     }
+}
+
+void MavlinkManager::handle_mavlink_message(const mavlink_message_t *msg)
+{
+    uint8_t sysid = msg->sysid;
+    uint8_t compid = msg->compid;
+
+    if (vehicles.find(sysid) == vehicles.end())
+    {
+        vehicles[sysid] = std::make_unique<Vehicle>(sysid, compid);
+        std::cout << "New vehicle detected: sysid=" << std::to_string(sysid) << std::endl;
+    }
+
+    vehicles[sysid]->handle_message(msg);
 }
 
 int MavlinkManager::initSerial(std::string device, int baud)
