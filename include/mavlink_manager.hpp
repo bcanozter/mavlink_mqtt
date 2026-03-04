@@ -7,6 +7,7 @@
 #include <memory>
 
 #include <vehicle.hpp>
+
 class MavlinkManager
 {
 private:
@@ -23,4 +24,5 @@ public:
 
     void handle_mavlink_message(const mavlink_message_t *msg);
     std::unordered_map<uint8_t, std::unique_ptr<Vehicle>> vehicles;
+    int task_loop(void);
 };

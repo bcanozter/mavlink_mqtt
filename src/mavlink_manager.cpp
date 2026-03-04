@@ -51,17 +51,6 @@ int MavlinkManager::initUDP(std::string address, int port)
     //     printf("setsockopt error: %s\n", strerror(errno));
     //     return -3;
     // }
-    struct sockaddr_in src_addr = {};
-    socklen_t src_addr_len = sizeof(src_addr);
-    bool src_addr_set = false;
-    while (1)
-    {
-        receive_some(socket_fd, (struct sockaddr_in *)&src_addr, &src_addr_len, &src_addr_set);
-        if (src_addr_set)
-        {
-            send_some(socket_fd, (struct sockaddr_in *)&src_addr, src_addr_len);
-        }
-    }
     return 0;
 }
 
@@ -154,4 +143,20 @@ void MavlinkManager::handle_mavlink_message(const mavlink_message_t *msg)
 int MavlinkManager::initSerial(std::string device, int baud)
 {
     return 0;
+}
+
+int MavlinkManager::task_loop(void)
+{
+    initUDP("127.0.0.1", 14552);
+    struct sockaddr_in src_addr = {};
+    socklen_t src_addr_len = sizeof(src_addr);
+    bool src_addr_set = false;
+    while (1)
+    {
+        receive_some(socket_fd, (struct sockaddr_in *)&src_addr, &src_addr_len, &src_addr_set);
+        if (src_addr_set)
+        {
+            send_some(socket_fd, (struct sockaddr_in *)&src_addr, src_addr_len);
+        }
+    }
 }
