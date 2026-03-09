@@ -43,5 +43,9 @@ public:
                  const std::string payload, const int QOS);
     int disconnect(void);
     int task_loop(void);
+
+    /* SSL */
+    const std::string KEY_STORE{"ssl/client.pem"};
+    const std::string TRUST_STORE{"ssl/test-root-ca.crt"};
 };
 extern MqttClient mqtt_client;

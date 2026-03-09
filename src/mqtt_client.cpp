@@ -1,13 +1,22 @@
 #include "mqtt_client.hpp"
 #include "mqtt/client.h"
+#include <fstream>
 
 int MqttClient::connect()
 {
     try
     {
+        auto sslopts = mqtt::ssl_options_builder()
+                           .trust_store(TRUST_STORE)
+                           .key_store(KEY_STORE)
+                           .error_handler([](const std::string &msg)
+                                          { std::cerr << "SSL Error: " << msg << std::endl; })
+                           .finalize();
+
         auto connOpts = mqtt::connect_options_builder()
                             .connect_timeout(TIMEOUT)
                             .clean_session()
+                            .ssl(std::move(sslopts))
                             .finalize();
         async_client.connect(connOpts)->wait();
         return 0;
@@ -55,6 +64,19 @@ int MqttClient::disconnect(void)
 
 int MqttClient::task_loop(void)
 {
+    std::ifstream tstore(TRUST_STORE);
+    if (!tstore)
+    {
+        std::cerr << "The trust store file does not exist: " << TRUST_STORE << std::endl;
+        return 1;
+    }
+
+    std::ifstream kstore(KEY_STORE);
+    if (!kstore)
+    {
+        std::cerr << "The key store file does not exist: " << KEY_STORE << std::endl;
+        return 1;
+    }
     int err_type = mqtt_client.connect();
     if (err_type != 0)
     {
